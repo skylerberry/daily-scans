@@ -554,7 +554,8 @@ body {
 }
 
 .separator {
-  color: #ccc;
+  color: #666;
+  font-weight: 600;
 }
 
 /* Mobile Responsive */
