@@ -392,7 +392,7 @@ def generate_html(rows, dark_mode=False, title="Momentum Scan", subtitle="", emo
 
     /* Tooltip styles */
     .has-tooltip {{
-      position: relative;
+      /* FIX: Removed position: relative to avoid overriding sticky on th */
     }}
 
     .has-tooltip .tooltip {{

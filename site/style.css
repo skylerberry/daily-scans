@@ -468,7 +468,7 @@ body {
 
 /* Tooltip styles for embedded scans */
 #scan-content .has-tooltip {
-  position: relative;
+  /* FIX: Removed position: relative to avoid overriding sticky on th */
 }
 
 #scan-content .has-tooltip .tooltip {
