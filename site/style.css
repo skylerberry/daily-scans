@@ -310,8 +310,13 @@ body {
 }
 
 /* Hide the scan's header when embedded - site header is sufficient */
-#scan-content .header {
+#scan-content .container > .header {
   display: none;
+}
+
+/* Ensure table wrapper starts at top with no gap */
+#scan-content .container > .table-wrapper {
+  margin-top: 0;
 }
 
 #scan-content .header-left h1 {
@@ -357,7 +362,8 @@ body {
 
 #scan-content table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
 }
 
 #scan-content thead th {
