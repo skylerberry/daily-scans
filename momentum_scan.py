@@ -780,6 +780,7 @@ Examples:
     parser.add_argument('--emoji', default='📡', help='Emoji before title (default: 📡)')
     parser.add_argument('--publish', action='store_true', help='Publish to site folder with today\'s date')
     parser.add_argument('--date', default=None, help='Custom date for publish (YYYY-MM-DD), defaults to today')
+    parser.add_argument('--push', action='store_true', help='Git add, commit, and push after publishing')
 
     args = parser.parse_args()
 
@@ -830,6 +831,24 @@ Examples:
         abs_html = os.path.abspath(html_path)
         if generate_png(abs_html, str(png_path)):
             print(f"PNG saved: {png_path}")
+
+    # Git push if requested
+    if args.push:
+        if not args.publish:
+            print("Warning: --push requires --publish, skipping git push")
+        else:
+            import subprocess
+            print("\nPushing to GitHub...")
+            try:
+                # Get the date for commit message
+                commit_date = datetime.strptime(date_str, '%Y-%m-%d').strftime('%b %d')
+
+                subprocess.run(['git', 'add', '.'], cwd=script_dir, check=True)
+                subprocess.run(['git', 'commit', '-m', f'{commit_date} scan'], cwd=script_dir, check=True)
+                subprocess.run(['git', 'push'], cwd=script_dir, check=True)
+                print("Pushed! Site will update in ~30 seconds.")
+            except subprocess.CalledProcessError as e:
+                print(f"Git error: {e}")
 
     if not args.publish:
         print(f"\nDone! Open {html_path} in your browser.")
