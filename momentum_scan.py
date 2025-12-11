@@ -288,8 +288,7 @@ def generate_html(rows, dark_mode=False, title="Momentum Scan", subtitle="", emo
     }}
 
     .container {{
-      max-width: 1100px;
-      margin: 0 auto;
+      margin: 0 40px;
       background: {theme['container_bg']};
       border: 1px solid {theme['container_border']};
     }}
