@@ -50,7 +50,7 @@
   function buildDateList() {
     dateList.innerHTML = '';
 
-    // Group scans by month
+    // Group scans by month, then by day
     const grouped = {};
     availableScans.forEach((scan, index) => {
       const dateObj = parseDate(scan.date);
@@ -58,9 +58,13 @@
       const monthLabel = dateObj.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
       if (!grouped[monthKey]) {
-        grouped[monthKey] = { label: monthLabel, scans: [] };
+        grouped[monthKey] = { label: monthLabel, days: {} };
       }
-      grouped[monthKey].scans.push({ ...scan, index });
+
+      if (!grouped[monthKey].days[scan.date]) {
+        grouped[monthKey].days[scan.date] = [];
+      }
+      grouped[monthKey].days[scan.date].push({ ...scan, index });
     });
 
     // Get sorted month keys (most recent first)
@@ -68,6 +72,7 @@
 
     monthKeys.forEach((monthKey, monthIndex) => {
       const group = grouped[monthKey];
+      const dayCount = Object.keys(group.days).length;
 
       // Create month header
       const monthHeader = document.createElement('div');
@@ -75,58 +80,86 @@
       monthHeader.innerHTML = `
         <span class="month-toggle">${monthIndex === 0 ? '▼' : '▶'}</span>
         <span class="month-label">${group.label}</span>
-        <span class="month-count">${group.scans.length}</span>
+        <span class="month-count">${dayCount}</span>
       `;
 
-      // Create scans container
-      const scansContainer = document.createElement('div');
-      scansContainer.className = 'month-dates' + (monthIndex === 0 ? ' expanded' : '');
+      // Create days container
+      const daysContainer = document.createElement('div');
+      daysContainer.className = 'month-dates' + (monthIndex === 0 ? ' expanded' : '');
 
-      // Add scans to container
-      group.scans.forEach((scan) => {
-        const item = document.createElement('div');
-        item.className = 'date-item' + (scan.index === currentIndex ? ' active' : '');
-        item.dataset.index = scan.index;
+      // Get sorted days (most recent first)
+      const dayKeys = Object.keys(group.days).sort().reverse();
 
-        const dateObj = parseDate(scan.date);
+      dayKeys.forEach((dayKey) => {
+        const scans = group.days[dayKey];
+        const dateObj = parseDate(dayKey);
         const weekday = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
         const dayNum = dateObj.getDate();
 
-        // Show name if present
-        const nameLabel = scan.name ? ` — ${scan.name}` : '';
+        // Check if any scan in this day is active
+        const hasActiveScan = scans.some(s => s.index === currentIndex);
 
-        item.innerHTML = `
-          <span class="date-day">${weekday} ${dayNum}${nameLabel}</span>
-        `;
+        // Create day row
+        const dayRow = document.createElement('div');
+        dayRow.className = 'day-row' + (hasActiveScan ? ' has-active' : '');
 
-        item.addEventListener('click', () => {
-          currentIndex = scan.index;
-          loadScan(scan.id);
-          closeDropdown();
-          updateDateList();
+        // Day label
+        const dayLabel = document.createElement('div');
+        dayLabel.className = 'day-label';
+        dayLabel.textContent = `${weekday} ${dayNum}`;
+        dayRow.appendChild(dayLabel);
+
+        // Scans for this day
+        const scansRow = document.createElement('div');
+        scansRow.className = 'day-scans';
+
+        scans.forEach((scan) => {
+          const scanItem = document.createElement('button');
+          scanItem.className = 'scan-item' + (scan.index === currentIndex ? ' active' : '');
+          scanItem.dataset.index = scan.index;
+          scanItem.textContent = scan.name || 'scan';
+
+          scanItem.addEventListener('click', (e) => {
+            e.stopPropagation();
+            currentIndex = scan.index;
+            loadScan(scan.id);
+            closeDropdown();
+            updateDateList();
+          });
+
+          scansRow.appendChild(scanItem);
         });
 
-        scansContainer.appendChild(item);
+        dayRow.appendChild(scansRow);
+        daysContainer.appendChild(dayRow);
       });
 
       // Toggle month expansion
       monthHeader.addEventListener('click', () => {
         const isExpanded = monthHeader.classList.contains('expanded');
         monthHeader.classList.toggle('expanded');
-        scansContainer.classList.toggle('expanded');
+        daysContainer.classList.toggle('expanded');
         monthHeader.querySelector('.month-toggle').textContent = isExpanded ? '▶' : '▼';
       });
 
       dateList.appendChild(monthHeader);
-      dateList.appendChild(scansContainer);
+      dateList.appendChild(daysContainer);
     });
   }
 
   function updateDateList() {
-    const items = dateList.querySelectorAll('.date-item');
-    items.forEach((item) => {
+    // Update scan items
+    const scanItems = dateList.querySelectorAll('.scan-item');
+    scanItems.forEach((item) => {
       const index = parseInt(item.dataset.index, 10);
       item.classList.toggle('active', index === currentIndex);
+    });
+
+    // Update day rows
+    const dayRows = dateList.querySelectorAll('.day-row');
+    dayRows.forEach((row) => {
+      const hasActive = row.querySelector('.scan-item.active');
+      row.classList.toggle('has-active', !!hasActive);
     });
   }
 

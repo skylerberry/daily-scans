@@ -180,33 +180,58 @@ body {
   display: block;
 }
 
-/* Date Items */
-.date-item {
-  padding: 10px 16px 10px 36px;
-  font-size: 13px;
-  cursor: pointer;
-  transition: background 0.1s ease;
+/* Day Rows */
+.day-row {
+  padding: 10px 16px 10px 20px;
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  gap: 12px;
   border-bottom: 1px solid #f0f0f0;
 }
 
-.date-item:last-child {
+.day-row:last-child {
   border-bottom: none;
 }
 
-.date-item:hover {
-  background: #f5f5f5;
+.day-row.has-active {
+  background: #f8f8f8;
 }
 
-.date-item.active {
+.day-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #333;
+  min-width: 56px;
+}
+
+/* Scan Items (pill buttons) */
+.day-scans {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.scan-item {
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 500;
+  font-family: inherit;
+  background: #e8e8e8;
+  color: #555;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.1s ease;
+}
+
+.scan-item:hover {
+  background: #d0d0d0;
+  color: #333;
+}
+
+.scan-item.active {
   background: #111;
   color: #fff;
-}
-
-.date-item .date-day {
-  font-weight: 500;
 }
 
 /* Overlay for dropdown */
