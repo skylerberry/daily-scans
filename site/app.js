@@ -422,6 +422,7 @@
     const table = scanContent.querySelector('table');
     if (!table) return;
 
+    const tableWrapper = table.closest('.table-wrapper');
     const headers = table.querySelectorAll('thead th');
     let isResizing = false;
     let currentTh = null;
@@ -461,9 +462,12 @@
     document.addEventListener('mousemove', (e) => {
       if (!isResizing) return;
       const diff = e.pageX - startX;
-      const newWidth = Math.max(40, startWidth + diff);
+      const minWidth = 40;
+      const maxWidth = 400; // Cap individual column width
+      const newWidth = Math.min(maxWidth, Math.max(minWidth, startWidth + diff));
       currentTh.style.width = newWidth + 'px';
       currentTh.style.minWidth = newWidth + 'px';
+      currentTh.style.maxWidth = newWidth + 'px';
     });
 
     // Mouse up handler
@@ -506,8 +510,12 @@
 
       document.body.removeChild(tempSpan);
 
+      // Cap auto-fit width
+      maxWidth = Math.min(maxWidth, 300);
+
       th.style.width = maxWidth + 'px';
       th.style.minWidth = maxWidth + 'px';
+      th.style.maxWidth = maxWidth + 'px';
     }
   }
 

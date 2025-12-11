@@ -584,7 +584,9 @@ def generate_html(rows, dark_mode=False, title="Momentum Scan", subtitle="", emo
       <table>
         <thead>
           <tr>
-            <th data-col="0" data-type="string">Ticker <span class="sort-arrow">↕</span></th>
+            <th data-col="0" data-type="string" class="has-tooltip">Ticker <span class="sort-arrow">↕</span>
+              <span class="tooltip">Click any ticker to copy it to clipboard.</span>
+            </th>
             <th data-col="1" data-type="percent" class="has-tooltip">RS <span class="sort-arrow">↕</span>
               <span class="tooltip"><span class="tooltip-title">Composite Relative Strength</span>Combines multiple timeframes (1M, 3M, 6M, 1Y) into an aggregate score. Percentile ranking vs all stocks. 90+ = top 10% performers across timeframes.</span>
             </th>
@@ -790,9 +792,12 @@ def generate_html(rows, dark_mode=False, title="Momentum Scan", subtitle="", emo
       document.addEventListener('mousemove', (e) => {
         if (!isResizing) return;
         const diff = e.pageX - startX;
-        const newWidth = Math.max(40, startWidth + diff);
+        const minWidth = 40;
+        const maxWidth = 400;
+        const newWidth = Math.min(maxWidth, Math.max(minWidth, startWidth + diff));
         currentTh.style.width = newWidth + 'px';
         currentTh.style.minWidth = newWidth + 'px';
+        currentTh.style.maxWidth = newWidth + 'px';
       });
 
       document.addEventListener('mouseup', () => {
@@ -829,8 +834,10 @@ def generate_html(rows, dark_mode=False, title="Momentum Scan", subtitle="", emo
         });
 
         document.body.removeChild(tempSpan);
+        maxWidth = Math.min(maxWidth, 300);
         th.style.width = maxWidth + 'px';
         th.style.minWidth = maxWidth + 'px';
+        th.style.maxWidth = maxWidth + 'px';
       }
     });
   </script>
