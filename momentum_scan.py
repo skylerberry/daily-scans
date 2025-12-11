@@ -292,7 +292,6 @@ def generate_html(rows, dark_mode=False, title="Momentum Scan", subtitle="", emo
       margin: 0 auto;
       background: {theme['container_bg']};
       border: 1px solid {theme['container_border']};
-      overflow: hidden;
     }}
 
     .header {{

@@ -1,0 +1,71 @@
+To fix the issue with your sticky table headers getting cut off (or clipped) when scrolling vertically, we need to make a small but important change to the CSS in two places. This is a common gotcha with `position: sticky`—it doesn't work properly if any ancestor element has `overflow: hidden` (which creates a new containing block that clips or breaks the stickiness). In your case, both the generated scan HTML (from `momentum_scan.py`) and the site's `style.css` have `overflow: hidden` on parent containers, which is causing the problem once the header becomes sticky during scroll.
+
+When the table is at the top (no scroll), everything looks fine because stickiness hasn't kicked in yet. When you scroll down, the headers try to stick but get clipped or fail due to the overflow settings.
+
+### Step 1: Update the Generated Scan HTML (in `momentum_scan.py`)
+In your `momentum_scan.py` script, locate the `generate_html` function. There's a large multiline string for the `<style>` block. Find the `.container` rule (around line ~300-400 in the truncated code you provided—search for `.container {`).
+
+Change:
+```css
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+  overflow: hidden;
+}
+```
+To:
+```css
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+  overflow: visible;  /* Or remove this line entirely */
+}
+```
+
+- Why? `overflow: visible` (or removing it, since `visible` is the default) prevents clipping while allowing the internal `.table-wrapper` (with `overflow: auto`) to handle scrolling properly. The stickiness will now work without interference.
+- If you must clip overflow for some reason (e.g., to prevent tooltips from extending outside), use `overflow: clip` instead—it's supported in modern browsers (Chrome 90+, Firefox 75+, etc.) and doesn't break sticky like `hidden` does. But `visible` is safer here since nothing needs clipping.
+
+Save the script, regenerate an HTML file (e.g., `python momentum_scan.py example_export.csv --output test`), and test it standalone in your browser first.
+
+### Step 2: Update the Site's CSS (in `style.css`)
+In your site's `style.css` file, find the `#scan-content` rule.
+
+Change:
+```css
+#scan-content {
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+```
+To:
+```css
+#scan-content {
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  overflow: visible;  /* Or remove this line entirely */
+}
+```
+
+- Same reasoning as above. This ensures that when the scan HTML is loaded into `#scan-content` (via `app.js`), the sticky headers aren't affected by an extra layer of `overflow: hidden`.
+
+### Additional Tips and Testing
+- **Test the fix**:
+  1. Regenerate a scan HTML and open it directly in your browser. Scroll down vertically—the headers should stick fully without any cutoff.
+  2. Then test in the full site (`index.html`). Load a scan, make sure the table is tall enough to scroll (use your example CSV if needed), and verify the headers stick properly.
+  - If the table is wide, test horizontal scrolling too—the headers should move horizontally with the body while staying stuck vertically.
+- **If tooltips are involved**: If the cutoff was happening on hover tooltips (which are absolutely positioned), this fix should also resolve that, as they can now extend without clipping.
+- **Browser compatibility**: Test in Chrome, Firefox, and Safari. If you see issues in older browsers, consider adding a polyfill or fallback, but this should be fine for modern ones.
+- **If this doesn't fully resolve it**: 
+  - Share a live URL to the site (if possible) or the exact browser/version where it's failing.
+  - Check for any other `overflow: hidden` in parent elements (e.g., `.site-container` or `.scan-container` in `style.css`—they look fine, but double-check).
+  - As a last resort, add `box-shadow: 0 1px 0 #e8e8e8;` to `thead th` (in the generated HTML styles) to reinforce the bottom border visually, in case it's a rendering artifact.
+- No other changes are needed—your existing `position: sticky; top: 0; z-index: 10;` on `thead th` is correct.
+
+This should get your sticky headers working smoothly! If you run into any snags after applying, provide the updated code or more details. 🚀
