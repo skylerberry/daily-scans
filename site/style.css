@@ -281,11 +281,158 @@ body {
 #scan-content .container {
   border: none;
   max-width: none;
+  background: #ffffff;
 }
 
 #scan-content .header {
   border-radius: 0;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e8e8e8;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
+
+#scan-content .header-left h1 {
+  font-size: 16px;
+  font-weight: 700;
+  color: #111;
+  letter-spacing: -0.3px;
+}
+
+#scan-content .header-left .subtitle {
+  font-size: 11px;
+  color: #666;
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+#scan-content .header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+#scan-content .date {
+  font-size: 12px;
+  color: #666;
+  font-weight: 500;
+}
+
+#scan-content .count {
+  font-size: 11px;
+  font-weight: 600;
+  color: #666;
+  background: #f8f8f8;
+  padding: 4px 8px;
+  border: 1px solid #e8e8e8;
+}
+
+#scan-content .table-wrapper {
+  overflow-x: auto;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+#scan-content table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+#scan-content thead th {
+  padding: 10px 12px;
+  text-align: left;
+  font-size: 10px;
+  font-weight: 600;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: #f8f8f8;
+  border-bottom: 1px solid #e8e8e8;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+#scan-content thead th:first-child { padding-left: 16px; }
+#scan-content thead th:last-child { padding-right: 16px; }
+#scan-content thead th:hover { background: #f0f0f0; }
+
+#scan-content thead th .sort-arrow {
+  margin-left: 3px;
+  opacity: 0.3;
+  font-size: 9px;
+}
+
+#scan-content thead th.sorted .sort-arrow { opacity: 1; }
+
+#scan-content tbody tr {
+  border-bottom: 1px solid #e8e8e8;
+}
+
+#scan-content tbody tr:nth-child(even) { background: #fafafa; }
+#scan-content tbody tr:hover { background: #f5f5f5; }
+
+#scan-content tbody td {
+  padding: 8px 12px;
+  font-size: 12px;
+  color: #333;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+#scan-content tbody td:first-child { padding-left: 16px; }
+#scan-content tbody td:last-child { padding-right: 16px; }
+
+#scan-content .ticker { font-weight: 700; color: #111; }
+#scan-content .name { font-size: 11px; color: #666; max-width: 120px; overflow: hidden; text-overflow: ellipsis; }
+#scan-content .price { font-weight: 600; color: #111; }
+#scan-content .liq { font-size: 11px; color: #666; }
+#scan-content .adr { color: #666; }
+#scan-content .rank { color: #666; font-size: 11px; }
+
+/* RS Badge */
+#scan-content .rs-badge {
+  display: inline-block;
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  min-width: 32px;
+  text-align: center;
+}
+
+#scan-content .rs-elite { background: #16a34a; color: #ffffff; }
+#scan-content .rs-high { background: #4ade80; color: #052e16; }
+#scan-content .rs-mid { background: #fbbf24; color: #422006; }
+#scan-content .rs-low { background: #e5e5e5; color: #737373; }
+
+/* BIS colors */
+#scan-content .bis-strong { color: #16a34a; font-weight: 700; }
+#scan-content .bis-moderate { color: #d97706; font-weight: 600; }
+#scan-content .bis-weak { color: #9ca3af; }
+
+/* RVol colors */
+#scan-content .rvol-high { color: #16a34a; font-weight: 600; }
+#scan-content .rvol-mid { color: #d97706; font-weight: 600; }
+#scan-content .rvol-low { color: #9ca3af; }
+
+/* Contraction colors */
+#scan-content .contr-high { color: #16a34a; font-weight: 600; }
+#scan-content .contr-mid { color: #d97706; font-weight: 600; }
+#scan-content .contr-low { color: #9ca3af; }
+
+/* DCR colors */
+#scan-content .dcr-high { color: #16a34a; font-weight: 600; }
+#scan-content .dcr-mid { color: #d97706; font-weight: 600; }
+#scan-content .dcr-low { color: #9ca3af; }
+
+/* % From Open colors */
+#scan-content .from-open-high { color: #16a34a; font-weight: 600; }
+#scan-content .from-open-mid { color: #6b7280; }
+#scan-content .from-open-neg { color: #dc2626; font-weight: 600; }
 
 /* Tooltip styles for embedded scans */
 #scan-content .has-tooltip {
