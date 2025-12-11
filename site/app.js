@@ -9,6 +9,8 @@
   const datePicker = document.getElementById('date-picker');
   const dateDropdown = document.getElementById('date-dropdown');
   const dateList = document.getElementById('date-list');
+  const scanTitleEl = document.getElementById('scan-title');
+  const scanSubtitleEl = document.getElementById('scan-subtitle');
 
   // State
   let availableDates = [];
@@ -204,6 +206,20 @@
       const container = doc.querySelector('.container');
 
       if (container) {
+        // Extract title and subtitle from scan header
+        const headerH1 = container.querySelector('.header-left h1');
+        const headerSubtitle = container.querySelector('.header-left .subtitle');
+
+        if (headerH1) {
+          scanTitleEl.textContent = headerH1.textContent;
+        }
+        if (headerSubtitle) {
+          scanSubtitleEl.textContent = headerSubtitle.textContent;
+          scanSubtitleEl.style.display = 'block';
+        } else {
+          scanSubtitleEl.style.display = 'none';
+        }
+
         // Remove the footer from embedded scan (we have site footer)
         const footer = container.querySelector('.footer');
         if (footer) footer.remove();

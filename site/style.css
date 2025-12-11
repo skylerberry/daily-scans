@@ -284,13 +284,9 @@ body {
   background: #ffffff;
 }
 
+/* Hide the scan's header when embedded - site header is sufficient */
 #scan-content .header {
-  border-radius: 0;
-  padding: 16px 20px;
-  border-bottom: 1px solid #e8e8e8;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  display: none;
 }
 
 #scan-content .header-left h1 {
