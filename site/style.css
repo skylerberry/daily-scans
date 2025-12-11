@@ -487,6 +487,8 @@ body {
   color: #333;
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 #scan-content tbody td:first-child { padding-left: 16px; }

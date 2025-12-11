@@ -491,6 +491,8 @@ def generate_html(rows, dark_mode=False, title="Momentum Scan", subtitle="", emo
       color: {theme['text_secondary']};
       white-space: nowrap;
       font-variant-numeric: tabular-nums;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }}
 
     tbody td:first-child {{ padding-left: 16px; }}
