@@ -465,7 +465,37 @@ body {
 #scan-content tbody td:first-child { padding-left: 16px; }
 #scan-content tbody td:last-child { padding-right: 16px; }
 
-#scan-content .ticker { font-weight: 700; color: #111; }
+#scan-content .ticker {
+  font-weight: 700;
+  color: #111;
+  cursor: pointer;
+  position: relative;
+}
+
+#scan-content .ticker:hover { text-decoration: underline; }
+
+#scan-content .ticker.copied::after {
+  content: 'Copied!';
+  position: absolute;
+  left: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  margin-left: 8px;
+  padding: 2px 6px;
+  background: #111;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 500;
+  border-radius: 3px;
+  white-space: nowrap;
+  animation: tickerFadeOut 1s ease forwards;
+}
+
+@keyframes tickerFadeOut {
+  0% { opacity: 1; }
+  70% { opacity: 1; }
+  100% { opacity: 0; }
+}
 #scan-content .name { font-size: 11px; color: #666; max-width: 120px; overflow: hidden; text-overflow: ellipsis; }
 #scan-content .price { font-weight: 600; color: #111; }
 #scan-content .liq { font-size: 11px; color: #666; }

@@ -302,8 +302,9 @@
           });
         });
 
-        // Re-run the table sorting script
+        // Re-run the table sorting script and ticker copy
         initTableSorting();
+        initTickerCopy();
       } else {
         throw new Error('Invalid scan format');
       }
@@ -376,6 +377,22 @@
       header.addEventListener('click', () => {
         const type = header.dataset.type || 'string';
         sortTable(index, type);
+      });
+    });
+  }
+
+  function initTickerCopy() {
+    scanContent.querySelectorAll('.ticker').forEach(ticker => {
+      ticker.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const text = ticker.textContent.trim();
+        try {
+          await navigator.clipboard.writeText(text);
+          ticker.classList.add('copied');
+          setTimeout(() => ticker.classList.remove('copied'), 1000);
+        } catch (err) {
+          console.error('Copy failed:', err);
+        }
       });
     });
   }

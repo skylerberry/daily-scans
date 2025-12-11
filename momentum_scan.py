@@ -472,7 +472,37 @@ def generate_html(rows, dark_mode=False, title="Momentum Scan", subtitle="", emo
     tbody td:first-child {{ padding-left: 16px; }}
     tbody td:last-child {{ padding-right: 16px; }}
 
-    .ticker {{ font-weight: 700; color: {theme['text']}; }}
+    .ticker {{
+      font-weight: 700;
+      color: {theme['text']};
+      cursor: pointer;
+      position: relative;
+    }}
+
+    .ticker:hover {{ text-decoration: underline; }}
+
+    .ticker.copied::after {{
+      content: 'Copied!';
+      position: absolute;
+      left: 100%;
+      top: 50%;
+      transform: translateY(-50%);
+      margin-left: 8px;
+      padding: 2px 6px;
+      background: {theme['text']};
+      color: {theme['bg']};
+      font-size: 10px;
+      font-weight: 500;
+      border-radius: 3px;
+      white-space: nowrap;
+      animation: fadeOut 1s ease forwards;
+    }}
+
+    @keyframes fadeOut {{
+      0% {{ opacity: 1; }}
+      70% {{ opacity: 1; }}
+      100% {{ opacity: 0; }}
+    }}
     .name {{ font-size: 11px; color: {theme['text_muted']}; max-width: 120px; overflow: hidden; text-overflow: ellipsis; }}
     .price {{ font-weight: 600; color: {theme['text']}; }}
     .liq {{ font-size: 11px; color: {theme['text_muted']}; }}
@@ -691,6 +721,21 @@ def generate_html(rows, dark_mode=False, title="Momentum Scan", subtitle="", emo
         header.addEventListener('click', () => {
           const type = header.dataset.type || 'string';
           sortTable(index, type);
+        });
+      });
+
+      // Copy ticker on click
+      document.querySelectorAll('.ticker').forEach(ticker => {
+        ticker.addEventListener('click', async (e) => {
+          e.stopPropagation();
+          const text = ticker.textContent.trim();
+          try {
+            await navigator.clipboard.writeText(text);
+            ticker.classList.add('copied');
+            setTimeout(() => ticker.classList.remove('copied'), 1000);
+          } catch (err) {
+            console.error('Copy failed:', err);
+          }
         });
       });
     });
