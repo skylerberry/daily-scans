@@ -430,7 +430,6 @@
     let currentColIndex = -1;
     let startX = 0;
     let startWidth = 0;
-    let resizeIndicator = null;
 
     // Load saved column widths
     function loadColumnWidths() {
@@ -455,23 +454,6 @@
       localStorage.setItem(storageKey, JSON.stringify(widths));
     }
 
-    // Create resize indicator
-    function showResizeIndicator(x) {
-      if (!resizeIndicator) {
-        resizeIndicator = document.createElement('div');
-        resizeIndicator.className = 'resize-indicator';
-        document.body.appendChild(resizeIndicator);
-      }
-      resizeIndicator.style.left = x + 'px';
-      resizeIndicator.style.display = 'block';
-    }
-
-    function hideResizeIndicator() {
-      if (resizeIndicator) {
-        resizeIndicator.style.display = 'none';
-      }
-    }
-
     // Add resize handles to each header
     headers.forEach((th, index) => {
       if (th.querySelector('.resize-handle')) return;
@@ -490,7 +472,6 @@
         startWidth = th.offsetWidth;
         handle.classList.add('resizing');
         table.classList.add('resizing');
-        showResizeIndicator(e.pageX);
       });
 
       handle.addEventListener('dblclick', (e) => {
@@ -512,8 +493,6 @@
       currentTh.style.width = newWidth + 'px';
       currentTh.style.minWidth = newWidth + 'px';
       currentTh.style.maxWidth = newWidth + 'px';
-
-      showResizeIndicator(e.pageX);
     }
 
     // Mouse up - use document level
@@ -521,7 +500,6 @@
       if (isResizing) {
         isResizing = false;
         table.classList.remove('resizing');
-        hideResizeIndicator();
 
         if (currentTh) {
           const handle = currentTh.querySelector('.resize-handle');

@@ -457,16 +457,6 @@ body {
   cursor: col-resize;
 }
 
-/* Resize indicator line */
-.resize-indicator {
-  position: fixed;
-  top: 0;
-  bottom: 0;
-  width: 2px;
-  background: #3b82f6;
-  pointer-events: none;
-  z-index: 9999;
-}
 
 /* Kill the pseudo-background from generated HTML */
 #scan-content thead th::after {
