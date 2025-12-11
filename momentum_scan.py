@@ -733,28 +733,38 @@ def update_manifest(site_dir):
     scans_dir = Path(site_dir) / 'scans'
     manifest_path = scans_dir / 'manifest.js'
 
-    # Find all scan HTML files (YYYY-MM-DD.html format)
-    dates = []
+    # Find all scan HTML files (YYYY-MM-DD.html or YYYY-MM-DD-name.html format)
+    scans = []
     for f in scans_dir.glob('*.html'):
-        name = f.stem
-        # Validate it's a date format
-        if len(name) == 10 and name[4] == '-' and name[7] == '-':
-            dates.append(name)
+        filename = f.stem
+        # Check if it starts with a valid date format
+        if len(filename) >= 10 and filename[4] == '-' and filename[7] == '-':
+            date_part = filename[:10]
+            name_part = filename[11:] if len(filename) > 10 else None
+            scans.append({
+                'id': filename,
+                'date': date_part,
+                'name': name_part
+            })
 
-    dates.sort(reverse=True)
+    # Sort by date (desc), then by name
+    scans.sort(key=lambda x: (x['date'], x['name'] or ''), reverse=True)
 
     # Write manifest
     manifest_content = f'''// Auto-generated manifest of available scans
 // This file is updated by momentum_scan.py --publish
 
 const SCAN_MANIFEST = {{
-  dates: {dates}
+  scans: {scans}
 }};
 '''
+    # Fix Python dict to JS object format
+    manifest_content = manifest_content.replace("'", '"').replace('None', 'null')
+
     with open(manifest_path, 'w') as f:
         f.write(manifest_content)
 
-    return dates
+    return scans
 
 
 def main():
@@ -780,6 +790,7 @@ Examples:
     parser.add_argument('--emoji', default='📡', help='Emoji before title (default: 📡)')
     parser.add_argument('--publish', action='store_true', help='Publish to site folder with today\'s date')
     parser.add_argument('--date', default=None, help='Custom date for publish (YYYY-MM-DD), defaults to today')
+    parser.add_argument('--name', default=None, help='Scan name for multiple scans per day (e.g., semis, growth)')
     parser.add_argument('--push', action='store_true', help='Git add, commit, and push after publishing')
 
     args = parser.parse_args()
@@ -811,7 +822,13 @@ Examples:
         else:
             date_str = datetime.now().strftime('%Y-%m-%d')
 
-        html_path = scans_dir / f'{date_str}.html'
+        # Add name suffix if provided
+        if args.name:
+            scan_id = f'{date_str}-{args.name}'
+        else:
+            scan_id = date_str
+
+        html_path = scans_dir / f'{scan_id}.html'
     else:
         html_path = Path(args.output).with_suffix('.html')
 
@@ -823,7 +840,7 @@ Examples:
     if args.publish:
         dates = update_manifest(site_dir)
         print(f"Manifest updated: {len(dates)} scans available")
-        print(f"\nPublished! View at: site/index.html?date={date_str}")
+        print(f"\nPublished! View at: site/index.html?date={scan_id}")
 
     if args.png:
         png_path = Path(args.output).with_suffix('.png') if not args.publish else html_path.with_suffix('.png')

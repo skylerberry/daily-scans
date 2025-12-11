@@ -13,34 +13,35 @@
   const scanSubtitleEl = document.getElementById('scan-subtitle');
 
   // State
-  let availableDates = [];
+  let availableScans = []; // Array of {id, date, name}
   let currentIndex = 0;
 
   // Initialize
   function init() {
-    // Get dates from manifest (loaded via manifest.js)
-    if (typeof SCAN_MANIFEST !== 'undefined' && SCAN_MANIFEST.dates) {
-      availableDates = SCAN_MANIFEST.dates.sort().reverse(); // Most recent first
+    // Get scans from manifest (loaded via manifest.js)
+    if (typeof SCAN_MANIFEST !== 'undefined' && SCAN_MANIFEST.scans) {
+      availableScans = SCAN_MANIFEST.scans;
     }
 
-    if (availableDates.length === 0) {
+    if (availableScans.length === 0) {
       showNoScans();
       return;
     }
 
-    // Check URL for specific date
+    // Check URL for specific scan
     const urlParams = new URLSearchParams(window.location.search);
     const requestedDate = urlParams.get('date');
 
-    if (requestedDate && availableDates.includes(requestedDate)) {
-      currentIndex = availableDates.indexOf(requestedDate);
+    if (requestedDate) {
+      const idx = availableScans.findIndex(s => s.id === requestedDate);
+      if (idx !== -1) currentIndex = idx;
     }
 
     // Build date picker
     buildDateList();
 
     // Load initial scan
-    loadScan(availableDates[currentIndex]);
+    loadScan(availableScans[currentIndex].id);
 
     // Setup event listeners
     setupEventListeners();
@@ -49,17 +50,17 @@
   function buildDateList() {
     dateList.innerHTML = '';
 
-    // Group dates by month
+    // Group scans by month
     const grouped = {};
-    availableDates.forEach((date, index) => {
-      const dateObj = parseDate(date);
+    availableScans.forEach((scan, index) => {
+      const dateObj = parseDate(scan.date);
       const monthKey = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}`;
       const monthLabel = dateObj.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
       if (!grouped[monthKey]) {
-        grouped[monthKey] = { label: monthLabel, dates: [] };
+        grouped[monthKey] = { label: monthLabel, scans: [] };
       }
-      grouped[monthKey].dates.push({ date, index });
+      grouped[monthKey].scans.push({ ...scan, index });
     });
 
     // Get sorted month keys (most recent first)
@@ -74,47 +75,50 @@
       monthHeader.innerHTML = `
         <span class="month-toggle">${monthIndex === 0 ? '▼' : '▶'}</span>
         <span class="month-label">${group.label}</span>
-        <span class="month-count">${group.dates.length}</span>
+        <span class="month-count">${group.scans.length}</span>
       `;
 
-      // Create dates container
-      const datesContainer = document.createElement('div');
-      datesContainer.className = 'month-dates' + (monthIndex === 0 ? ' expanded' : '');
+      // Create scans container
+      const scansContainer = document.createElement('div');
+      scansContainer.className = 'month-dates' + (monthIndex === 0 ? ' expanded' : '');
 
-      // Add dates to container
-      group.dates.forEach(({ date, index }) => {
+      // Add scans to container
+      group.scans.forEach((scan) => {
         const item = document.createElement('div');
-        item.className = 'date-item' + (index === currentIndex ? ' active' : '');
-        item.dataset.index = index;
+        item.className = 'date-item' + (scan.index === currentIndex ? ' active' : '');
+        item.dataset.index = scan.index;
 
-        const dateObj = parseDate(date);
+        const dateObj = parseDate(scan.date);
         const weekday = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
         const dayNum = dateObj.getDate();
 
+        // Show name if present
+        const nameLabel = scan.name ? ` — ${scan.name}` : '';
+
         item.innerHTML = `
-          <span class="date-day">${weekday} ${dayNum}</span>
+          <span class="date-day">${weekday} ${dayNum}${nameLabel}</span>
         `;
 
         item.addEventListener('click', () => {
-          currentIndex = index;
-          loadScan(date);
+          currentIndex = scan.index;
+          loadScan(scan.id);
           closeDropdown();
           updateDateList();
         });
 
-        datesContainer.appendChild(item);
+        scansContainer.appendChild(item);
       });
 
       // Toggle month expansion
       monthHeader.addEventListener('click', () => {
         const isExpanded = monthHeader.classList.contains('expanded');
         monthHeader.classList.toggle('expanded');
-        datesContainer.classList.toggle('expanded');
+        scansContainer.classList.toggle('expanded');
         monthHeader.querySelector('.month-toggle').textContent = isExpanded ? '▶' : '▼';
       });
 
       dateList.appendChild(monthHeader);
-      dateList.appendChild(datesContainer);
+      dateList.appendChild(scansContainer);
     });
   }
 
@@ -127,20 +131,20 @@
   }
 
   function setupEventListeners() {
-    // Previous day
+    // Previous scan
     prevBtn.addEventListener('click', () => {
-      if (currentIndex < availableDates.length - 1) {
+      if (currentIndex < availableScans.length - 1) {
         currentIndex++;
-        loadScan(availableDates[currentIndex]);
+        loadScan(availableScans[currentIndex].id);
         updateDateList();
       }
     });
 
-    // Next day
+    // Next scan
     nextBtn.addEventListener('click', () => {
       if (currentIndex > 0) {
         currentIndex--;
-        loadScan(availableDates[currentIndex]);
+        loadScan(availableScans[currentIndex].id);
         updateDateList();
       }
     });
@@ -175,24 +179,27 @@
     dateDropdown.classList.remove('open');
   }
 
-  async function loadScan(date) {
+  async function loadScan(scanId) {
     // Update URL without reload
     const url = new URL(window.location);
-    url.searchParams.set('date', date);
+    url.searchParams.set('date', scanId);
     window.history.replaceState({}, '', url);
 
+    // Extract date part (first 10 chars) for display
+    const datePart = scanId.substring(0, 10);
+
     // Update header
-    currentDateEl.textContent = formatDateDisplay(date);
+    currentDateEl.textContent = formatDateDisplay(datePart);
 
     // Update nav buttons
-    prevBtn.disabled = currentIndex >= availableDates.length - 1;
+    prevBtn.disabled = currentIndex >= availableScans.length - 1;
     nextBtn.disabled = currentIndex <= 0;
 
     // Show loading
     scanContent.innerHTML = '<div class="loading">Loading scan...</div>';
 
     try {
-      const response = await fetch(`scans/${date}.html`);
+      const response = await fetch(`scans/${scanId}.html`);
 
       if (!response.ok) {
         throw new Error('Scan not found');
@@ -235,7 +242,7 @@
       scanContent.innerHTML = `
         <div class="error">
           <h2>Scan not available</h2>
-          <p>No scan found for ${formatDateDisplay(date)}</p>
+          <p>No scan found for ${formatDateDisplay(datePart)}</p>
         </div>
       `;
     }
