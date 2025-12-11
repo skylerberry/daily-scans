@@ -356,19 +356,31 @@ def generate_html(rows, dark_mode=False, title="Momentum Scan", subtitle="", emo
       color: {theme['text_muted']};
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      background: {theme['thead_bg']};
-      border-bottom: 1px solid {theme['border']};
+      background: transparent;
       white-space: nowrap;
       cursor: pointer;
       user-select: none;
       position: sticky;
       top: 0;
-      z-index: 10;
+      z-index: 20;
+    }}
+
+    thead th::after {{
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      background: {theme['thead_bg']};
+      border-bottom: 1px solid {theme['border']};
+      pointer-events: none;
+      z-index: -1;
     }}
 
     thead th:first-child {{ padding-left: 16px; }}
     thead th:last-child {{ padding-right: 16px; }}
-    thead th:hover {{ background: {theme['hover']}; }}
+    thead th:hover::after {{ background: {theme['hover']}; }}
 
     thead th .sort-arrow {{
       margin-left: 3px;

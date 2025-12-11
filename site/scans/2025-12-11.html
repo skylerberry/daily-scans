@@ -84,19 +84,31 @@
       color: #666666;
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      background: #f8f8f8;
-      border-bottom: 1px solid #e8e8e8;
+      background: transparent;
       white-space: nowrap;
       cursor: pointer;
       user-select: none;
       position: sticky;
       top: 0;
-      z-index: 10;
+      z-index: 20;
+    }
+
+    thead th::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      background: #f8f8f8;
+      border-bottom: 1px solid #e8e8e8;
+      pointer-events: none;
+      z-index: -1;
     }
 
     thead th:first-child { padding-left: 16px; }
     thead th:last-child { padding-right: 16px; }
-    thead th:hover { background: #f5f5f5; }
+    thead th:hover::after { background: #f5f5f5; }
 
     thead th .sort-arrow {
       margin-left: 3px;
