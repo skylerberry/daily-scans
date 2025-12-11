@@ -351,8 +351,8 @@ body {
 
 #scan-content .table-wrapper {
   overflow-x: auto;
-  max-height: none;
-  overflow-y: visible;
+  max-height: 70vh;
+  overflow-y: auto;
 }
 
 #scan-content table {
@@ -373,6 +373,9 @@ body {
   white-space: nowrap;
   cursor: pointer;
   user-select: none;
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 #scan-content thead th:first-child { padding-left: 16px; }
