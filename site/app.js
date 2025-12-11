@@ -385,11 +385,31 @@
     scanContent.querySelectorAll('.ticker').forEach(ticker => {
       ticker.addEventListener('click', async (e) => {
         e.stopPropagation();
-        const text = ticker.textContent.trim();
+        const originalText = ticker.textContent.trim();
+        if (ticker.dataset.copying) return; // Prevent double-clicks during animation
+
         try {
-          await navigator.clipboard.writeText(text);
-          ticker.classList.add('copied');
-          setTimeout(() => ticker.classList.remove('copied'), 1000);
+          await navigator.clipboard.writeText(originalText);
+          ticker.dataset.copying = 'true';
+
+          // Fade out
+          ticker.classList.add('copying');
+          setTimeout(() => {
+            // Swap text
+            ticker.textContent = 'Copied';
+            ticker.classList.remove('copying');
+
+            // Wait, then fade out again
+            setTimeout(() => {
+              ticker.classList.add('copying');
+              setTimeout(() => {
+                // Restore original
+                ticker.textContent = originalText;
+                ticker.classList.remove('copying');
+                delete ticker.dataset.copying;
+              }, 150);
+            }, 600);
+          }, 150);
         } catch (err) {
           console.error('Copy failed:', err);
         }

@@ -476,33 +476,12 @@ def generate_html(rows, dark_mode=False, title="Momentum Scan", subtitle="", emo
       font-weight: 700;
       color: {theme['text']};
       cursor: pointer;
-      position: relative;
+      transition: opacity 0.15s ease;
     }}
 
     .ticker:hover {{ text-decoration: underline; }}
 
-    .ticker.copied::after {{
-      content: 'Copied!';
-      position: absolute;
-      left: 100%;
-      top: 50%;
-      transform: translateY(-50%);
-      margin-left: 8px;
-      padding: 2px 6px;
-      background: {theme['text']};
-      color: {theme['bg']};
-      font-size: 10px;
-      font-weight: 500;
-      border-radius: 3px;
-      white-space: nowrap;
-      animation: fadeOut 1s ease forwards;
-    }}
-
-    @keyframes fadeOut {{
-      0% {{ opacity: 1; }}
-      70% {{ opacity: 1; }}
-      100% {{ opacity: 0; }}
-    }}
+    .ticker.copying {{ opacity: 0; }}
     .name {{ font-size: 11px; color: {theme['text_muted']}; max-width: 120px; overflow: hidden; text-overflow: ellipsis; }}
     .price {{ font-weight: 600; color: {theme['text']}; }}
     .liq {{ font-size: 11px; color: {theme['text_muted']}; }}
@@ -728,11 +707,27 @@ def generate_html(rows, dark_mode=False, title="Momentum Scan", subtitle="", emo
       document.querySelectorAll('.ticker').forEach(ticker => {
         ticker.addEventListener('click', async (e) => {
           e.stopPropagation();
-          const text = ticker.textContent.trim();
+          const originalText = ticker.textContent.trim();
+          if (ticker.dataset.copying) return;
+
           try {
-            await navigator.clipboard.writeText(text);
-            ticker.classList.add('copied');
-            setTimeout(() => ticker.classList.remove('copied'), 1000);
+            await navigator.clipboard.writeText(originalText);
+            ticker.dataset.copying = 'true';
+
+            ticker.classList.add('copying');
+            setTimeout(() => {
+              ticker.textContent = 'Copied';
+              ticker.classList.remove('copying');
+
+              setTimeout(() => {
+                ticker.classList.add('copying');
+                setTimeout(() => {
+                  ticker.textContent = originalText;
+                  ticker.classList.remove('copying');
+                  delete ticker.dataset.copying;
+                }, 150);
+              }, 600);
+            }, 150);
           } catch (err) {
             console.error('Copy failed:', err);
           }
