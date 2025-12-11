@@ -445,7 +445,7 @@ body {
 
 #scan-content thead th .resize-handle:hover,
 #scan-content thead th .resize-handle.resizing {
-  background: #ccc;
+  background: rgba(0, 0, 0, 0.2);
 }
 
 #scan-content table.resizing {
@@ -455,6 +455,17 @@ body {
 
 #scan-content table.resizing * {
   cursor: col-resize;
+}
+
+/* Resize indicator line */
+.resize-indicator {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: #3b82f6;
+  pointer-events: none;
+  z-index: 9999;
 }
 
 /* Kill the pseudo-background from generated HTML */

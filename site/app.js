@@ -422,71 +422,125 @@
     const table = scanContent.querySelector('table');
     if (!table) return;
 
-    const tableWrapper = table.closest('.table-wrapper');
     const headers = table.querySelectorAll('thead th');
+    const storageKey = 'scanTableColumnWidths';
+
     let isResizing = false;
     let currentTh = null;
+    let currentColIndex = -1;
     let startX = 0;
     let startWidth = 0;
+    let resizeIndicator = null;
+
+    // Load saved column widths
+    function loadColumnWidths() {
+      try {
+        const saved = localStorage.getItem(storageKey);
+        if (saved) {
+          const widths = JSON.parse(saved);
+          headers.forEach((th, i) => {
+            if (widths[i]) {
+              th.style.width = widths[i] + 'px';
+              th.style.minWidth = widths[i] + 'px';
+              th.style.maxWidth = widths[i] + 'px';
+            }
+          });
+        }
+      } catch (e) { /* ignore */ }
+    }
+
+    // Save column widths
+    function saveColumnWidths() {
+      const widths = Array.from(headers).map(th => th.offsetWidth);
+      localStorage.setItem(storageKey, JSON.stringify(widths));
+    }
+
+    // Create resize indicator
+    function showResizeIndicator(x) {
+      if (!resizeIndicator) {
+        resizeIndicator = document.createElement('div');
+        resizeIndicator.className = 'resize-indicator';
+        document.body.appendChild(resizeIndicator);
+      }
+      resizeIndicator.style.left = x + 'px';
+      resizeIndicator.style.display = 'block';
+    }
+
+    function hideResizeIndicator() {
+      if (resizeIndicator) {
+        resizeIndicator.style.display = 'none';
+      }
+    }
 
     // Add resize handles to each header
-    headers.forEach((th) => {
-      // Skip if already has resize handle
+    headers.forEach((th, index) => {
       if (th.querySelector('.resize-handle')) return;
 
       const handle = document.createElement('div');
       handle.className = 'resize-handle';
       th.appendChild(handle);
 
-      // Drag to resize
       handle.addEventListener('mousedown', (e) => {
         e.preventDefault();
         e.stopPropagation();
         isResizing = true;
         currentTh = th;
+        currentColIndex = index;
         startX = e.pageX;
         startWidth = th.offsetWidth;
         handle.classList.add('resizing');
         table.classList.add('resizing');
+        showResizeIndicator(e.pageX);
       });
 
-      // Double-click to auto-fit
       handle.addEventListener('dblclick', (e) => {
         e.preventDefault();
         e.stopPropagation();
-        autoFitColumn(th);
+        autoFitColumn(th, index);
       });
     });
 
-    // Mouse move handler
-    document.addEventListener('mousemove', (e) => {
+    // Mouse move - use document level
+    function onMouseMove(e) {
       if (!isResizing) return;
+
       const diff = e.pageX - startX;
-      const minWidth = 40;
-      const maxWidth = 400; // Cap individual column width
+      const minWidth = 60;
+      const maxWidth = 500;
       const newWidth = Math.min(maxWidth, Math.max(minWidth, startWidth + diff));
+
       currentTh.style.width = newWidth + 'px';
       currentTh.style.minWidth = newWidth + 'px';
       currentTh.style.maxWidth = newWidth + 'px';
-    });
 
-    // Mouse up handler
-    document.addEventListener('mouseup', () => {
+      showResizeIndicator(e.pageX);
+    }
+
+    // Mouse up - use document level
+    function onMouseUp() {
       if (isResizing) {
         isResizing = false;
         table.classList.remove('resizing');
-        const handle = currentTh.querySelector('.resize-handle');
-        if (handle) handle.classList.remove('resizing');
-        currentTh = null;
-      }
-    });
+        hideResizeIndicator();
 
-    function autoFitColumn(th) {
-      const colIndex = Array.from(headers).indexOf(th);
+        if (currentTh) {
+          const handle = currentTh.querySelector('.resize-handle');
+          if (handle) handle.classList.remove('resizing');
+        }
+
+        saveColumnWidths();
+        currentTh = null;
+        currentColIndex = -1;
+      }
+    }
+
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+
+    function autoFitColumn(th, colIndex) {
       const tbody = table.querySelector('tbody');
       const rows = tbody.querySelectorAll('tr');
 
-      // Create temp span to measure text width
       const tempSpan = document.createElement('span');
       tempSpan.style.visibility = 'hidden';
       tempSpan.style.position = 'absolute';
@@ -494,29 +548,34 @@
       tempSpan.style.font = window.getComputedStyle(th).font;
       document.body.appendChild(tempSpan);
 
-      // Measure header width
-      tempSpan.textContent = th.textContent;
-      let maxWidth = tempSpan.offsetWidth + 30; // padding
+      // Measure header (just the text, not the tooltip)
+      const headerText = th.childNodes[0]?.textContent || th.textContent;
+      tempSpan.textContent = headerText.trim();
+      let maxWidth = tempSpan.offsetWidth + 40;
 
-      // Measure each cell in the column
       rows.forEach(row => {
         const cell = row.cells[colIndex];
         if (cell) {
           tempSpan.style.font = window.getComputedStyle(cell).font;
           tempSpan.textContent = cell.textContent;
-          maxWidth = Math.max(maxWidth, tempSpan.offsetWidth + 24);
+          maxWidth = Math.max(maxWidth, tempSpan.offsetWidth + 28);
         }
       });
 
       document.body.removeChild(tempSpan);
 
-      // Cap auto-fit width
-      maxWidth = Math.min(maxWidth, 300);
+      // Constrain auto-fit
+      maxWidth = Math.max(60, Math.min(maxWidth, 350));
 
       th.style.width = maxWidth + 'px';
       th.style.minWidth = maxWidth + 'px';
       th.style.maxWidth = maxWidth + 'px';
+
+      saveColumnWidths();
     }
+
+    // Load saved widths on init
+    loadColumnWidths();
   }
 
   function showNoScans() {
