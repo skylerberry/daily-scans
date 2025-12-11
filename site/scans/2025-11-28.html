@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Semis Scan</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #ffffff;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      padding: 24px;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      background: #ffffff;
+      border: 1px solid #e0e0e0;
+      overflow: hidden;
+    }
+
+    .header {
+      padding: 16px 20px;
+      border-bottom: 1px solid #e8e8e8;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .header-left h1 {
+      font-size: 16px;
+      font-weight: 700;
+      color: #111111;
+      letter-spacing: -0.3px;
+    }
+
+    .header-left .subtitle {
+      font-size: 11px;
+      color: #666666;
+      font-weight: 500;
+      margin-top: 2px;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .date {
+      font-size: 12px;
+      color: #666666;
+      font-weight: 500;
+    }
+
+    .count {
+      font-size: 11px;
+      font-weight: 600;
+      color: #666666;
+      background: #f8f8f8;
+      padding: 4px 8px;
+      border: 1px solid #e8e8e8;
+    }
+
+    .table-wrapper {
+      overflow-x: auto;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead th {
+      padding: 10px 12px;
+      text-align: left;
+      font-size: 10px;
+      font-weight: 600;
+      color: #666666;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      background: #f8f8f8;
+      border-bottom: 1px solid #e8e8e8;
+      white-space: nowrap;
+      cursor: pointer;
+      user-select: none;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    thead th:first-child { padding-left: 16px; }
+    thead th:last-child { padding-right: 16px; }
+    thead th:hover { background: #f5f5f5; }
+
+    thead th .sort-arrow {
+      margin-left: 3px;
+      opacity: 0.3;
+      font-size: 9px;
+    }
+
+    thead th.sorted .sort-arrow { opacity: 1; }
+
+    /* Tooltip styles */
+    .has-tooltip {
+      position: relative;
+    }
+
+    .has-tooltip .tooltip {
+      visibility: hidden;
+      opacity: 0;
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      margin-top: 8px;
+      padding: 10px 12px;
+      background: #1f2937;
+      color: #ffffff;
+      font-size: 11px;
+      font-weight: 400;
+      line-height: 1.5;
+      text-transform: none;
+      letter-spacing: 0;
+      white-space: normal;
+      width: 260px;
+      border-radius: 6px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      z-index: 100;
+      transition: opacity 0.15s ease;
+    }
+
+    .has-tooltip .tooltip::before {
+      content: '';
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 6px solid transparent;
+      border-bottom-color: #1f2937;
+    }
+
+    .has-tooltip:hover .tooltip {
+      visibility: visible;
+      opacity: 1;
+    }
+
+    /* Right-align tooltip for last column */
+    th:last-child.has-tooltip .tooltip {
+      left: auto;
+      right: 0;
+      transform: none;
+    }
+
+    th:last-child.has-tooltip .tooltip::before {
+      left: auto;
+      right: 16px;
+      transform: none;
+    }
+
+    .tooltip-title {
+      font-weight: 600;
+      margin-bottom: 4px;
+      display: block;
+      font-size: 11px;
+    }
+
+    tbody tr {
+      border-bottom: 1px solid #e8e8e8;
+    }
+
+    tbody tr:nth-child(even) { background: #fafafa; }
+    tbody tr:hover { background: #f5f5f5; }
+
+    tbody td {
+      padding: 8px 12px;
+      font-size: 12px;
+      color: #333333;
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+    }
+
+    tbody td:first-child { padding-left: 16px; }
+    tbody td:last-child { padding-right: 16px; }
+
+    .ticker { font-weight: 700; color: #111111; }
+    .name { font-size: 11px; color: #666666; max-width: 120px; overflow: hidden; text-overflow: ellipsis; }
+    .price { font-weight: 600; color: #111111; }
+    .liq { font-size: 11px; color: #666666; }
+    .adr { color: #666666; }
+    .rank { color: #666666; font-size: 11px; }
+
+    .rs-badge {
+      display: inline-block;
+      padding: 3px 8px;
+      font-size: 11px;
+      font-weight: 700;
+      min-width: 32px;
+      text-align: center;
+    }
+
+    .rs-elite { background: #16a34a; color: #ffffff; }
+    .rs-high { background: #4ade80; color: #052e16; }
+    .rs-mid { background: #fbbf24; color: #422006; }
+    .rs-low { background: #e5e5e5; color: #737373; }
+
+    .bis-strong { color: #16a34a; font-weight: 700; }
+    .bis-moderate { color: #d97706; font-weight: 600; }
+    .bis-weak { color: #9ca3af; }
+
+    .rvol-high { color: #16a34a; font-weight: 600; }
+    .rvol-mid { color: #d97706; font-weight: 600; }
+    .rvol-low { color: #9ca3af; }
+
+    .contr-high { color: #16a34a; font-weight: 600; }
+    .contr-mid { color: #d97706; font-weight: 600; }
+    .contr-low { color: #9ca3af; }
+
+    .dcr-high { color: #16a34a; font-weight: 600; }
+    .dcr-mid { color: #d97706; font-weight: 600; }
+    .dcr-low { color: #9ca3af; }
+
+    .from-open-high { color: #16a34a; font-weight: 600; }
+    .from-open-mid { color: #6b7280; }
+    .from-open-neg { color: #dc2626; font-weight: 600; }
+
+    .footer {
+      padding: 12px 16px;
+      border-top: 1px solid #e8e8e8;
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+      color: #666666;
+    }
+
+    .footer .branding a {
+      color: #666666;
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.15s ease;
+    }
+
+    .footer .branding a:hover {
+      color: #111111;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="header-left">
+        <h1>📡 Semis Scan</h1>
+        <div class="subtitle">Semiconductors & Tech Hardware</div>
+      </div>
+      <div class="header-right">
+        <div class="date">Dec 11, 2025</div>
+        <div class="count">25 stocks</div>
+      </div>
+    </div>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th data-col="0" data-type="string">Ticker <span class="sort-arrow">↕</span></th>
+            <th data-col="1" data-type="percent" class="has-tooltip">RS <span class="sort-arrow">↕</span>
+              <span class="tooltip"><span class="tooltip-title">Composite Relative Strength</span>Combines multiple timeframes (1M, 3M, 6M, 1Y) into an aggregate score. Percentile ranking vs all stocks. 90+ = top 10% performers across timeframes.</span>
+            </th>
+            <th data-col="2" data-type="string">Name <span class="sort-arrow">↕</span></th>
+            <th data-col="3" data-type="number">Price <span class="sort-arrow">↕</span></th>
+            <th data-col="4" data-type="number" class="has-tooltip">Liq <span class="sort-arrow">↕</span>
+              <span class="tooltip"><span class="tooltip-title">Daily Liquidity</span>20-day average dollar volume (price × volume). Indicates how easily you can enter/exit positions. Higher = more liquid, tighter spreads, less slippage.</span>
+            </th>
+            <th data-col="5" data-type="number" class="has-tooltip">BIS <span class="sort-arrow">↕</span>
+              <span class="tooltip"><span class="tooltip-title">Breakout Intensity Score</span>Measures breakout strength by combining price move (% change / ADR), relative volume vs 20-day avg, and intraday efficiency (close position in day's range). Higher = stronger conviction breakout.</span>
+            </th>
+            <th data-col="6" data-type="percent" class="has-tooltip">DCR <span class="sort-arrow">↕</span>
+              <span class="tooltip"><span class="tooltip-title">Daily Closing Range</span>Where price closed within the day's high-low range. 100% = closed at the high, 0% = closed at the low. Higher values indicate bullish closing action.</span>
+            </th>
+            <th data-col="7" data-type="percent" class="has-tooltip">ADR% <span class="sort-arrow">↕</span>
+              <span class="tooltip"><span class="tooltip-title">Average Daily Range</span>Average of (High - Low) / Close over the last 20 trading days. Excludes overnight gaps. Useful for position sizing and setting stop losses.</span>
+            </th>
+            <th data-col="8" data-type="percent" class="has-tooltip">P.Contr <span class="sort-arrow">↕</span>
+              <span class="tooltip"><span class="tooltip-title">Price Contraction</span>Volatility contraction score over 15 sessions. Ranks current session's price range vs recent ranges. Higher = tighter consolidation (current range narrower than recent sessions). Low values indicate volatility expansion.</span>
+            </th>
+            <th data-col="9" data-type="number" class="has-tooltip">RVol <span class="sort-arrow">↕</span>
+              <span class="tooltip"><span class="tooltip-title">Relative Volume</span>Today's volume divided by 20-day average volume. 1.0 = normal, 1.5+ = elevated interest, 2.0+ = unusual activity worth attention.</span>
+            </th>
+            <th data-col="10" data-type="number">% Open <span class="sort-arrow">↕</span></th>
+            <th data-col="11" data-type="number" class="has-tooltip">Rank <span class="sort-arrow">↕</span>
+              <span class="tooltip"><span class="tooltip-title">RS Rank</span>Custom score combining performance across multiple timeframes (1M to 1Y) plus distance from 52-week high/low. Provides a comprehensive view of relative strength vs peers in various market conditions.</span>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="ticker">AAOI</td>
+            <td><span class="rs-badge rs-mid">66</span></td>
+            <td class="name">Applied Optoelectronics</td>
+            <td class="price">$35.00</td>
+            <td class="liq">$323M</td>
+            <td class="bis-strong">2.52</td>
+            <td class="dcr-high">89%</td>
+            <td class="adr">9.8%</td>
+            <td class="contr-high">87%</td>
+            <td class="rvol-high">1.83</td>
+            <td class="from-open-high">+19.1%</td>
+            <td class="rank">585</td>
+          </tr>
+          <tr>
+            <td class="ticker">AMKR</td>
+            <td><span class="rs-badge rs-elite">94</span></td>
+            <td class="name">Amkor Tech</td>
+            <td class="price">$46.86</td>
+            <td class="liq">$213M</td>
+            <td class="bis-strong">1.13</td>
+            <td class="dcr-high">94%</td>
+            <td class="adr">5.3%</td>
+            <td class="contr-low">47%</td>
+            <td class="rvol-mid">1.26</td>
+            <td class="from-open-high">+3.2%</td>
+            <td class="rank">106</td>
+          </tr>
+          <tr>
+            <td class="ticker">ACMR</td>
+            <td><span class="rs-badge rs-mid">67</span></td>
+            <td class="name">ACM Research</td>
+            <td class="price">$39.50</td>
+            <td class="liq">$43M</td>
+            <td class="bis-strong">1.08</td>
+            <td class="dcr-high">89%</td>
+            <td class="adr">5.5%</td>
+            <td class="contr-high">87%</td>
+            <td class="rvol-low">1.00</td>
+            <td class="from-open-high">+6.2%</td>
+            <td class="rank">778</td>
+          </tr>
+          <tr>
+            <td class="ticker">ASTS</td>
+            <td><span class="rs-badge rs-elite">93</span></td>
+            <td class="name">AST SpaceMobile</td>
+            <td class="price">$79.00</td>
+            <td class="liq">$1.1B</td>
+            <td class="bis-moderate">0.96</td>
+            <td class="dcr-high">86%</td>
+            <td class="adr">9.1%</td>
+            <td class="contr-high">73%</td>
+            <td class="rvol-mid">1.19</td>
+            <td class="from-open-high">+8.8%</td>
+            <td class="rank">707</td>
+          </tr>
+          <tr>
+            <td class="ticker">STX</td>
+            <td><span class="rs-badge rs-elite">97</span></td>
+            <td class="name">Seagate Tech</td>
+            <td class="price">$298.93</td>
+            <td class="liq">$950M</td>
+            <td class="bis-moderate">0.89</td>
+            <td class="dcr-high">89%</td>
+            <td class="adr">5.6%</td>
+            <td class="contr-high">80%</td>
+            <td class="rvol-low">1.00</td>
+            <td class="from-open-high">+5.6%</td>
+            <td class="rank">82</td>
+          </tr>
+          <tr>
+            <td class="ticker">MRVL</td>
+            <td><span class="rs-badge rs-elite">93</span></td>
+            <td class="name">Marvell Tech</td>
+            <td class="price">$92.46</td>
+            <td class="liq">$1.8B</td>
+            <td class="bis-moderate">0.56</td>
+            <td class="dcr-high">86%</td>
+            <td class="adr">5.2%</td>
+            <td class="contr-low">7%</td>
+            <td class="rvol-low">0.86</td>
+            <td class="from-open-mid">+1.2%</td>
+            <td class="rank">2072</td>
+          </tr>
+          <tr>
+            <td class="ticker">AEHR</td>
+            <td><span class="rs-badge rs-mid">64</span></td>
+            <td class="name">Aehr Test Systems</td>
+            <td class="price">$25.84</td>
+            <td class="liq">$13M</td>
+            <td class="bis-moderate">0.56</td>
+            <td class="dcr-high">99%</td>
+            <td class="adr">7.2%</td>
+            <td class="contr-mid">53%</td>
+            <td class="rvol-low">0.75</td>
+            <td class="from-open-high">+6.0%</td>
+            <td class="rank">865</td>
+          </tr>
+          <tr>
+            <td class="ticker">MU</td>
+            <td><span class="rs-badge rs-elite">95</span></td>
+            <td class="name">Micron Tech</td>
+            <td class="price">$263.75</td>
+            <td class="liq">$4.9B</td>
+            <td class="bis-weak">0.49</td>
+            <td class="dcr-high">93%</td>
+            <td class="adr">6.2%</td>
+            <td class="contr-high">73%</td>
+            <td class="rvol-low">0.73</td>
+            <td class="from-open-high">+3.4%</td>
+            <td class="rank">126</td>
+          </tr>
+          <tr>
+            <td class="ticker">BELFB</td>
+            <td><span class="rs-badge rs-elite">97</span></td>
+            <td class="name">Bel Fuse</td>
+            <td class="price">$172.92</td>
+            <td class="liq">$22M</td>
+            <td class="bis-weak">0.44</td>
+            <td class="dcr-high">86%</td>
+            <td class="adr">5.3%</td>
+            <td class="contr-low">40%</td>
+            <td class="rvol-low">0.82</td>
+            <td class="from-open-high">+3.8%</td>
+            <td class="rank">253</td>
+          </tr>
+          <tr>
+            <td class="ticker">FN</td>
+            <td><span class="rs-badge rs-elite">100</span></td>
+            <td class="name">Fabrinet</td>
+            <td class="price">$516.87</td>
+            <td class="liq">$262M</td>
+            <td class="bis-weak">0.39</td>
+            <td class="dcr-mid">76%</td>
+            <td class="adr">6.1%</td>
+            <td class="contr-high">80%</td>
+            <td class="rvol-low">0.84</td>
+            <td class="from-open-high">+4.5%</td>
+            <td class="rank">223</td>
+          </tr>
+          <tr>
+            <td class="ticker">POET</td>
+            <td><span class="rs-badge rs-mid">61</span></td>
+            <td class="name">POET Tech</td>
+            <td class="price">$7.14</td>
+            <td class="liq">$69M</td>
+            <td class="bis-weak">0.33</td>
+            <td class="dcr-mid">71%</td>
+            <td class="adr">8.9%</td>
+            <td class="contr-mid">60%</td>
+            <td class="rvol-mid">1.17</td>
+            <td class="from-open-high">+4.7%</td>
+            <td class="rank">1161</td>
+          </tr>
+          <tr>
+            <td class="ticker">VICR</td>
+            <td><span class="rs-badge rs-elite">95</span></td>
+            <td class="name">Vicor</td>
+            <td class="price">$100.89</td>
+            <td class="liq">$33M</td>
+            <td class="bis-weak">0.29</td>
+            <td class="dcr-high">85%</td>
+            <td class="adr">5.2%</td>
+            <td class="contr-low">33%</td>
+            <td class="rvol-mid">1.12</td>
+            <td class="from-open-mid">+1.4%</td>
+            <td class="rank">394</td>
+          </tr>
+          <tr>
+            <td class="ticker">SANM</td>
+            <td><span class="rs-badge rs-mid">63</span></td>
+            <td class="name">Sanmina</td>
+            <td class="price">$169.24</td>
+            <td class="liq">$59M</td>
+            <td class="bis-weak">0.29</td>
+            <td class="dcr-high">92%</td>
+            <td class="adr">5.3%</td>
+            <td class="contr-mid">67%</td>
+            <td class="rvol-low">0.55</td>
+            <td class="from-open-high">+3.7%</td>
+            <td class="rank">650</td>
+          </tr>
+          <tr>
+            <td class="ticker">SITM</td>
+            <td><span class="rs-badge rs-elite">98</span></td>
+            <td class="name">SiTime</td>
+            <td class="price">$376.56</td>
+            <td class="liq">$112M</td>
+            <td class="bis-weak">0.23</td>
+            <td class="dcr-mid">71%</td>
+            <td class="adr">6.8%</td>
+            <td class="contr-low">47%</td>
+            <td class="rvol-low">0.80</td>
+            <td class="from-open-high">+3.3%</td>
+            <td class="rank">231</td>
+          </tr>
+          <tr>
+            <td class="ticker">VSAT</td>
+            <td><span class="rs-badge rs-mid">63</span></td>
+            <td class="name">Viasat</td>
+            <td class="price">$37.29</td>
+            <td class="liq">$44M</td>
+            <td class="bis-weak">0.22</td>
+            <td class="dcr-mid">70%</td>
+            <td class="adr">6.8%</td>
+            <td class="contr-high">80%</td>
+            <td class="rvol-low">0.67</td>
+            <td class="from-open-high">+3.1%</td>
+            <td class="rank">305</td>
+          </tr>
+          <tr>
+            <td class="ticker">DQ</td>
+            <td><span class="rs-badge rs-mid">64</span></td>
+            <td class="name">Daqo New Energy</td>
+            <td class="price">$34.57</td>
+            <td class="liq">$17M</td>
+            <td class="bis-weak">0.21</td>
+            <td class="dcr-high">84%</td>
+            <td class="adr">6.3%</td>
+            <td class="contr-mid">60%</td>
+            <td class="rvol-low">0.53</td>
+            <td class="from-open-high">+4.0%</td>
+            <td class="rank">610</td>
+          </tr>
+          <tr>
+            <td class="ticker">RMBS</td>
+            <td><span class="rs-badge rs-mid">74</span></td>
+            <td class="name">Rambus</td>
+            <td class="price">$106.84</td>
+            <td class="liq">$96M</td>
+            <td class="bis-weak">0.19</td>
+            <td class="dcr-high">83%</td>
+            <td class="adr">5.4%</td>
+            <td class="contr-high">73%</td>
+            <td class="rvol-low">0.60</td>
+            <td class="from-open-mid">+2.2%</td>
+            <td class="rank">678</td>
+          </tr>
+          <tr>
+            <td class="ticker">MXL</td>
+            <td><span class="rs-badge rs-mid">71</span></td>
+            <td class="name">MaxLinear</td>
+            <td class="price">$19.61</td>
+            <td class="liq">$22M</td>
+            <td class="bis-weak">0.12</td>
+            <td class="dcr-high">95%</td>
+            <td class="adr">5.2%</td>
+            <td class="contr-mid">53%</td>
+            <td class="rvol-low">0.81</td>
+            <td class="from-open-mid">+0.8%</td>
+            <td class="rank">1273</td>
+          </tr>
+          <tr>
+            <td class="ticker">CLS</td>
+            <td><span class="rs-badge rs-elite">98</span></td>
+            <td class="name">Celestica</td>
+            <td class="price">$349.00</td>
+            <td class="liq">$520M</td>
+            <td class="bis-weak">0.10</td>
+            <td class="dcr-mid">77%</td>
+            <td class="adr">7.5%</td>
+            <td class="contr-low">40%</td>
+            <td class="rvol-low">0.48</td>
+            <td class="from-open-mid">+2.0%</td>
+            <td class="rank">101</td>
+          </tr>
+          <tr>
+            <td class="ticker">INTC</td>
+            <td><span class="rs-badge rs-elite">91</span></td>
+            <td class="name">Intel</td>
+            <td class="price">$40.78</td>
+            <td class="liq">$2.8B</td>
+            <td class="bis-weak">0.10</td>
+            <td class="dcr-high">90%</td>
+            <td class="adr">5.0%</td>
+            <td class="contr-mid">53%</td>
+            <td class="rvol-low">0.79</td>
+            <td class="from-open-mid">+1.8%</td>
+            <td class="rank">824</td>
+          </tr>
+          <tr>
+            <td class="ticker">TTMI</td>
+            <td><span class="rs-badge rs-elite">94</span></td>
+            <td class="name">TTM Tech</td>
+            <td class="price">$77.75</td>
+            <td class="liq">$93M</td>
+            <td class="bis-weak">0.07</td>
+            <td class="dcr-mid">66%</td>
+            <td class="adr">7.0%</td>
+            <td class="contr-low">47%</td>
+            <td class="rvol-low">0.57</td>
+            <td class="from-open-mid">+1.7%</td>
+            <td class="rank">120</td>
+          </tr>
+          <tr>
+            <td class="ticker">SKYT</td>
+            <td><span class="rs-badge rs-mid">65</span></td>
+            <td class="name">SkyWater Tech</td>
+            <td class="price">$19.38</td>
+            <td class="liq">$18M</td>
+            <td class="bis-weak">0.02</td>
+            <td class="dcr-mid">67%</td>
+            <td class="adr">8.9%</td>
+            <td class="contr-low">13%</td>
+            <td class="rvol-low">0.56</td>
+            <td class="from-open-mid">+1.1%</td>
+            <td class="rank">1104</td>
+          </tr>
+          <tr>
+            <td class="ticker">LASR</td>
+            <td><span class="rs-badge rs-high">89</span></td>
+            <td class="name">nLIGHT</td>
+            <td class="price">$37.85</td>
+            <td class="liq">$18M</td>
+            <td class="bis-weak">-0.01</td>
+            <td class="dcr-mid">57%</td>
+            <td class="adr">6.1%</td>
+            <td class="contr-low">27%</td>
+            <td class="rvol-low">0.65</td>
+            <td class="from-open-mid">+0.2%</td>
+            <td class="rank">55</td>
+          </tr>
+          <tr>
+            <td class="ticker">SMTC</td>
+            <td><span class="rs-badge rs-elite">94</span></td>
+            <td class="name">Semtech</td>
+            <td class="price">$79.47</td>
+            <td class="liq">$72M</td>
+            <td class="bis-weak">-0.06</td>
+            <td class="dcr-mid">59%</td>
+            <td class="adr">6.2%</td>
+            <td class="contr-low">33%</td>
+            <td class="rvol-low">0.45</td>
+            <td class="from-open-neg">-1.6%</td>
+            <td class="rank">314</td>
+          </tr>
+          <tr>
+            <td class="ticker">CRDO</td>
+            <td><span class="rs-badge rs-elite">97</span></td>
+            <td class="name">Credo Tech</td>
+            <td class="price">$157.82</td>
+            <td class="liq">$1.3B</td>
+            <td class="bis-weak">-0.14</td>
+            <td class="dcr-low">16%</td>
+            <td class="adr">9.0%</td>
+            <td class="contr-mid">53%</td>
+            <td class="rvol-low">1.07</td>
+            <td class="from-open-neg">-6.2%</td>
+            <td class="rank">733</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="footer">
+      <span>Click column headers to sort • Not financial advice</span>
+      <span class="branding">Crafted with ❤️ by Skyler · <a href="https://x.com/skylerber" target="_blank">𝕏</a> · <a href="https://discord.gg/uxgzXpYP" target="_blank">Discord</a></span>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const table = document.querySelector('table');
+      const headers = table.querySelectorAll('thead th');
+      const tbody = table.querySelector('tbody');
+      let currentSort = { col: null, asc: true };
+
+      function parseValue(text, type) {
+        text = text.trim();
+        if (text === '-' || text === '') return null;
+
+        if (type === 'number') {
+          return parseFloat(text.replace(/[$,BMK]/g, '').replace(/[()]/g, '')) *
+                 (text.includes('B') ? 1000 : text.includes('M') ? 1 : text.includes('K') ? 0.001 : 1);
+        }
+        if (type === 'percent') {
+          return parseFloat(text.replace(/[%+]/g, ''));
+        }
+        return text.toLowerCase();
+      }
+
+      function sortTable(colIndex, type) {
+        const rows = Array.from(tbody.querySelectorAll('tr'));
+        const asc = currentSort.col === colIndex ? !currentSort.asc : false;
+
+        rows.sort((a, b) => {
+          const aVal = parseValue(a.cells[colIndex].textContent, type);
+          const bVal = parseValue(b.cells[colIndex].textContent, type);
+
+          if (aVal === null && bVal === null) return 0;
+          if (aVal === null) return 1;
+          if (bVal === null) return -1;
+
+          if (typeof aVal === 'string') {
+            return asc ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+          }
+          return asc ? aVal - bVal : bVal - aVal;
+        });
+
+        rows.forEach(row => tbody.appendChild(row));
+
+        headers.forEach((h, i) => {
+          h.classList.remove('sorted');
+          const arrow = h.querySelector('.sort-arrow');
+          if (arrow) arrow.textContent = '↕';
+        });
+
+        headers[colIndex].classList.add('sorted');
+        const arrow = headers[colIndex].querySelector('.sort-arrow');
+        if (arrow) arrow.textContent = asc ? '↑' : '↓';
+
+        currentSort = { col: colIndex, asc };
+      }
+
+      headers.forEach((header, index) => {
+        header.addEventListener('click', () => {
+          const type = header.dataset.type || 'string';
+          sortTable(index, type);
+        });
+      });
+    });
+  </script>
+</body>
+</html>

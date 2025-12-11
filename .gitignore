@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.py[cod]
+.env
+
+# macOS
+.DS_Store
+
+# Test outputs (keep site/scans for actual published scans)
+test_output.html
+test_output.png
+momentum_scan.html
+*.png
+
+# IDE
+.idea/
+.vscode/

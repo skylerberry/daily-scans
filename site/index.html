@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daily Scans | Skyler</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="site-container">
+    <header class="site-header">
+      <div class="header-title">
+        <h1>📡 Daily Scans</h1>
+        <p class="tagline">Momentum setups for swing traders</p>
+      </div>
+      <div class="date-nav">
+        <button class="nav-btn" id="prev-day" title="Previous day">←</button>
+        <button class="date-picker" id="date-picker">
+          <span id="current-date">Loading...</span>
+          <span class="dropdown-arrow">▼</span>
+        </button>
+        <button class="nav-btn" id="next-day" title="Next day">→</button>
+      </div>
+    </header>
+
+    <main class="scan-container">
+      <div id="scan-content">
+        <div class="loading">Loading scan...</div>
+      </div>
+    </main>
+
+    <div class="date-dropdown" id="date-dropdown">
+      <div class="dropdown-header">Select Date</div>
+      <div class="date-list" id="date-list">
+        <!-- Dates populated by JS -->
+      </div>
+    </div>
+
+    <footer class="site-footer">
+      <span>Crafted with ❤️ by Skyler</span>
+      <span class="footer-links">
+        <a href="https://x.com/skylerber" target="_blank">𝕏</a>
+        <span class="separator">·</span>
+        <a href="https://discord.gg/uxgzXpYP" target="_blank">Discord</a>
+      </span>
+    </footer>
+  </div>
+
+  <script src="scans/manifest.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
