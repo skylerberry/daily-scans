@@ -351,8 +351,8 @@ body {
 
 #scan-content .table-wrapper {
   overflow-x: auto;
-  max-height: 80vh;
-  overflow-y: auto;
+  max-height: none;
+  overflow-y: visible;
 }
 
 #scan-content table {
@@ -373,9 +373,6 @@ body {
   white-space: nowrap;
   cursor: pointer;
   user-select: none;
-  position: sticky;
-  top: 0;
-  z-index: 10;
 }
 
 #scan-content thead th:first-child { padding-left: 16px; }
@@ -426,7 +423,7 @@ body {
 }
 
 #scan-content .rs-elite { background: #16a34a; color: #ffffff; }
-#scan-content .rs-high { background: #4ade80; color: #052e16; }
+#scan-content .rs-high { background: #16a34a; color: #ffffff; }
 #scan-content .rs-mid { background: #fbbf24; color: #422006; }
 #scan-content .rs-low { background: #e5e5e5; color: #737373; }
 
