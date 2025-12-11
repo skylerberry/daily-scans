@@ -503,7 +503,7 @@ def generate_html(rows, dark_mode=False, title="Momentum Scan", subtitle="", emo
       transition: opacity 0.15s ease;
     }}
 
-    .ticker:hover {{ text-decoration: underline; }}
+    .ticker:hover:not([data-copying]) {{ text-decoration: underline; }}
 
     .ticker.copying {{ opacity: 0; }}
     .name {{ font-size: 11px; color: {theme['text_muted']}; max-width: 120px; overflow: hidden; text-overflow: ellipsis; }}

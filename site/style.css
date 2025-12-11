@@ -498,7 +498,7 @@ body {
   transition: opacity 0.15s ease;
 }
 
-#scan-content .ticker:hover { text-decoration: underline; }
+#scan-content .ticker:hover:not([data-copying]) { text-decoration: underline; }
 
 #scan-content .ticker.copying { opacity: 0; }
 #scan-content .name { font-size: 11px; color: #666; max-width: 120px; overflow: hidden; text-overflow: ellipsis; }
