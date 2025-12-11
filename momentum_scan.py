@@ -365,6 +365,31 @@ def generate_html(rows, dark_mode=False, title="Momentum Scan", subtitle="", emo
       z-index: 20;
     }}
 
+    thead th .resize-handle {{
+      position: absolute;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      width: 6px;
+      cursor: col-resize;
+      background: transparent;
+      z-index: 30;
+    }}
+
+    thead th .resize-handle:hover,
+    thead th .resize-handle.resizing {{
+      background: {theme['border']};
+    }}
+
+    table.resizing {{
+      cursor: col-resize;
+      user-select: none;
+    }}
+
+    table.resizing * {{
+      cursor: col-resize;
+    }}
+
     thead th::after {{
       content: '';
       position: absolute;
@@ -733,6 +758,81 @@ def generate_html(rows, dark_mode=False, title="Momentum Scan", subtitle="", emo
           }
         });
       });
+
+      // Column resize
+      let isResizing = false;
+      let currentTh = null;
+      let startX = 0;
+      let startWidth = 0;
+
+      headers.forEach((th) => {
+        const handle = document.createElement('div');
+        handle.className = 'resize-handle';
+        th.appendChild(handle);
+
+        handle.addEventListener('mousedown', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          isResizing = true;
+          currentTh = th;
+          startX = e.pageX;
+          startWidth = th.offsetWidth;
+          handle.classList.add('resizing');
+          table.classList.add('resizing');
+        });
+
+        handle.addEventListener('dblclick', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          autoFitColumn(th);
+        });
+      });
+
+      document.addEventListener('mousemove', (e) => {
+        if (!isResizing) return;
+        const diff = e.pageX - startX;
+        const newWidth = Math.max(40, startWidth + diff);
+        currentTh.style.width = newWidth + 'px';
+        currentTh.style.minWidth = newWidth + 'px';
+      });
+
+      document.addEventListener('mouseup', () => {
+        if (isResizing) {
+          isResizing = false;
+          table.classList.remove('resizing');
+          const handle = currentTh.querySelector('.resize-handle');
+          if (handle) handle.classList.remove('resizing');
+          currentTh = null;
+        }
+      });
+
+      function autoFitColumn(th) {
+        const colIndex = Array.from(headers).indexOf(th);
+        const rows = tbody.querySelectorAll('tr');
+
+        const tempSpan = document.createElement('span');
+        tempSpan.style.visibility = 'hidden';
+        tempSpan.style.position = 'absolute';
+        tempSpan.style.whiteSpace = 'nowrap';
+        tempSpan.style.font = window.getComputedStyle(th).font;
+        document.body.appendChild(tempSpan);
+
+        tempSpan.textContent = th.textContent;
+        let maxWidth = tempSpan.offsetWidth + 30;
+
+        rows.forEach(row => {
+          const cell = row.cells[colIndex];
+          if (cell) {
+            tempSpan.style.font = window.getComputedStyle(cell).font;
+            tempSpan.textContent = cell.textContent;
+            maxWidth = Math.max(maxWidth, tempSpan.offsetWidth + 24);
+          }
+        });
+
+        document.body.removeChild(tempSpan);
+        th.style.width = maxWidth + 'px';
+        th.style.minWidth = maxWidth + 'px';
+      }
     });
   </script>
 </body>

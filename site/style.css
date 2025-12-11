@@ -428,6 +428,33 @@ body {
   z-index: 5;
   background: #f8f8f8;
   border-bottom: 1px solid #e8e8e8;
+  position: relative;
+}
+
+/* Column resize handle */
+#scan-content thead th .resize-handle {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 6px;
+  cursor: col-resize;
+  background: transparent;
+  z-index: 10;
+}
+
+#scan-content thead th .resize-handle:hover,
+#scan-content thead th .resize-handle.resizing {
+  background: #ccc;
+}
+
+#scan-content table.resizing {
+  cursor: col-resize;
+  user-select: none;
+}
+
+#scan-content table.resizing * {
+  cursor: col-resize;
 }
 
 /* Kill the pseudo-background from generated HTML */
