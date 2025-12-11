@@ -301,6 +301,52 @@ body {
   font-size: 14px;
 }
 
+/* Scan selector bar (when multiple scans per day) */
+.scan-selector {
+  padding: 12px 16px;
+  background: #fafafa;
+  border-bottom: 1px solid #e8e8e8;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.scan-selector-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.scan-selector-pills {
+  display: flex;
+  gap: 6px;
+}
+
+.scan-pill {
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  font-family: inherit;
+  background: #e8e8e8;
+  color: #555;
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.1s ease;
+}
+
+.scan-pill:hover {
+  background: #d8d8d8;
+  color: #333;
+}
+
+.scan-pill.active {
+  background: #111;
+  color: #fff;
+}
+
 /* Embedded scan overrides */
 #scan-content .container {
   border: none;

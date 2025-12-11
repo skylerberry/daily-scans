@@ -16,6 +16,13 @@
   let availableScans = []; // Array of {id, date, name}
   let currentIndex = 0;
 
+  // Get all scans for a specific date
+  function getScansForDate(date) {
+    return availableScans
+      .map((scan, index) => ({ ...scan, index }))
+      .filter(scan => scan.date === date);
+  }
+
   // Initialize
   function init() {
     // Get scans from manifest (loaded via manifest.js)
@@ -264,7 +271,36 @@
         const footer = container.querySelector('.footer');
         if (footer) footer.remove();
 
-        scanContent.innerHTML = container.outerHTML;
+        // Build scan selector if multiple scans for this date
+        const scansForDate = getScansForDate(datePart);
+        let selectorHtml = '';
+
+        if (scansForDate.length > 1) {
+          const pills = scansForDate.map(scan => {
+            const isActive = scan.index === currentIndex;
+            const label = scan.name || 'scan';
+            return `<button class="scan-pill${isActive ? ' active' : ''}" data-index="${scan.index}">${label}</button>`;
+          }).join('');
+
+          selectorHtml = `
+            <div class="scan-selector">
+              <span class="scan-selector-label">Scans</span>
+              <div class="scan-selector-pills">${pills}</div>
+            </div>
+          `;
+        }
+
+        scanContent.innerHTML = selectorHtml + container.outerHTML;
+
+        // Add click handlers to scan pills
+        scanContent.querySelectorAll('.scan-pill').forEach(pill => {
+          pill.addEventListener('click', () => {
+            const index = parseInt(pill.dataset.index, 10);
+            currentIndex = index;
+            loadScan(availableScans[index].id);
+            updateDateList();
+          });
+        });
 
         // Re-run the table sorting script
         initTableSorting();
