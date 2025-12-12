@@ -27,6 +27,21 @@ import os
 from datetime import datetime
 from pathlib import Path
 
+# Sector presets: name -> (title, subtitle, emoji, scan_name)
+SECTOR_PRESETS = {
+    'solar': ('Solar Scan', 'Solar & Renewable Energy', '☀️', 'solar'),
+    'comms': ('Comms Scan', 'Communication Services', '📡', 'comms'),
+    'financials': ('Financials Scan', 'Banks, Insurance & Financial Services', '🏦', 'financials'),
+    'software': ('Software Scan', 'Software & Cloud Services', '💻', 'software'),
+    'hardware': ('Hardware Scan', 'Hardware & Equipment', '🖥️', 'hardware'),
+    'defensive': ('Defensive Scan', 'Consumer Defensive & Staples', '🛒', 'defensive'),
+    'industrials': ('Industrials Scan', 'Industrial & Manufacturing', '🏭', 'industrials'),
+    'cyclical': ('Cyclical Scan', 'Consumer Cyclical & Discretionary', '🛍️', 'cyclical'),
+    'semis': ('Semis Scan', 'Semiconductors & Chip Stocks', '🔬', 'semis'),
+    'healthcare': ('Healthcare Scan', 'Healthcare & Biotech', '🏥', 'healthcare'),
+    'materials': ('Materials Scan', 'Basic Materials & Mining', '⛏️', 'materials'),
+}
+
 
 def parse_percent(value):
     """Parse percentage string to float."""
@@ -950,9 +965,20 @@ Examples:
     parser.add_argument('--publish', action='store_true', help='Publish to site folder with today\'s date')
     parser.add_argument('--date', default=None, help='Custom date for publish (YYYY-MM-DD), defaults to today')
     parser.add_argument('--name', default=None, help='Scan name for multiple scans per day (e.g., semis, growth)')
+    parser.add_argument('--sector', default=None, choices=list(SECTOR_PRESETS.keys()),
+                        help='Use sector preset (sets title, subtitle, emoji, name)')
     parser.add_argument('--push', action='store_true', help='Git add, commit, and push after publishing')
 
     args = parser.parse_args()
+
+    # Apply sector preset if specified
+    if args.sector:
+        preset = SECTOR_PRESETS[args.sector]
+        args.title = preset[0]
+        args.subtitle = preset[1]
+        args.emoji = preset[2]
+        if not args.name:  # Only set name if not explicitly provided
+            args.name = preset[3]
 
     if not os.path.exists(args.csv_file):
         print(f"File not found: {args.csv_file}")
